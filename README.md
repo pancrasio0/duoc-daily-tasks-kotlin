@@ -1,2 +1,1 @@
-# duoc daily tasks kotlin
-Aplicación móvil para detallar tareas diarias
+# DailyTasks-Android-Compose
