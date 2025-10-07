@@ -96,14 +96,14 @@ fun TaskItem(task: Task) {
                 color = MaterialTheme.colorScheme.onPrimary
             )
             Text(
-                text = task.description,
+                text = task.description?.let { it } ?: "",
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onPrimary
             )
             task.date?.let {
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
-                    text = "Fecha: ${SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(it)}",
+                    text = "Fecha: ${SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault()).format(it)}",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onPrimary
                 )

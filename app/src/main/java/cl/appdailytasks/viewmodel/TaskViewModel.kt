@@ -24,7 +24,7 @@ class TaskViewModel : ViewModel() {
 
     fun addTask(title: String, description: String, dateStr: String, imageUrl: String) {
         val date = try {
-            SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).parse(dateStr)
+            SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault()).parse(dateStr)
         } catch (e: Exception) {
             null
         }

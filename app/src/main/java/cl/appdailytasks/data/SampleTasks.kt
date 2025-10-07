@@ -25,6 +25,14 @@ object SampleTasks {
             description = "30 minutos de cardio en la trotadora.",
             date = Date(),
             imageUrl = "https://images.pexels.com/photos/4753997/pexels-photo-4753997.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500"
+        ),
+        Task(
+            id = 4,
+            name = "Hacer ejercicio 2",
+            description = null,
+            date = Date(),
+            imageUrl = "https://images.pexels.com/photos/4753997/pexels-photo-4753997.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500"
         )
+
     )
 }
