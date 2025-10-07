@@ -30,6 +30,21 @@ import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.time.format.DateTimeParseException
 import java.util.Calendar
+import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.runtime.LaunchedEffect
+import java.io.File
+import androidx.core.content.FileProvider
+import java.util.Objects
+import android.content.Context
+import android.Manifest
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
+import androidx.compose.ui.Alignment
+import coil.compose.rememberAsyncImagePainter
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -48,6 +63,8 @@ fun AddTaskScreen(
 
     val isTitleValid = title.length > 3
     val isDescriptionValid = description.isEmpty() || description.length > 3
+
+
 
     fun isValidDateTime(dateTimeStr: String): Boolean {
         if (dateTimeStr.isEmpty()) return true
@@ -71,6 +88,7 @@ fun AddTaskScreen(
     val day = calendar.get(Calendar.DAY_OF_MONTH)
     val hour = calendar.get(Calendar.HOUR_OF_DAY)
     val minute = calendar.get(Calendar.MINUTE)
+
 
     val datePickerDialog = DatePickerDialog(
         context,
@@ -103,6 +121,31 @@ fun AddTaskScreen(
 
         },
         year, month, day
+    )
+
+    var imageUri by remember { mutableStateOf<Uri?>(null) }
+    var tempImageUri by remember { mutableStateOf<Uri?>(null) }
+
+    val cameraLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.TakePicture(),
+        onResult = { isSuccess ->
+            if (isSuccess) {
+                imageUri = tempImageUri
+                imageUrl = tempImageUri.toString()
+            }
+        }
+    )
+
+    val permissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission(),
+        onResult = { isGranted ->
+            if (isGranted) {
+                val uri = createImageUri(context)
+                tempImageUri = uri
+                cameraLauncher.launch(tempImageUri)
+            } else {
+            }
+        }
     )
 
     Scaffold(
@@ -161,14 +204,25 @@ fun AddTaskScreen(
                 supportingText = { dateError?.let { Text(it, color = MaterialTheme.colorScheme.error) } }
             )
 
-            OutlinedTextField(
-                value = imageUrl,
-                onValueChange = { imageUrl = it },
-                label = { Text("URL de la imagen (Opcional)") },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 8.dp)
-            )
+            if (imageUri != null) {
+                Image(
+                    painter = rememberAsyncImagePainter(model = imageUri),
+                    contentDescription = "Vista previa de la imagen",
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(200.dp)
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+            }
+
+            Button(
+                onClick = {
+                    permissionLauncher.launch(Manifest.permission.CAMERA)
+                },
+                modifier = Modifier.align(Alignment.CenterHorizontally)
+            ) {
+                Text(if (imageUri == null) "Añadir Foto" else "Tomar Otra Foto")
+            }
 
             Button(
                 onClick = {
@@ -182,4 +236,16 @@ fun AddTaskScreen(
             }
         }
     }
+}
+private fun createImageUri(context: Context): Uri {
+    val file = File.createTempFile(
+        "JPEG_${System.currentTimeMillis()}_",
+        ".jpg",
+        context.externalCacheDir
+    )
+    return FileProvider.getUriForFile(
+        Objects.requireNonNull(context),
+        "cl.appdailytasks.provider",
+        file
+    )
 }

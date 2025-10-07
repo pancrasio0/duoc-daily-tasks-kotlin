@@ -84,9 +84,8 @@ fun TaskItem(task: Task) {
                     model = it,
                     contentDescription = "Imagen de la tarea",
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .height(180.dp),
-                    contentScale = ContentScale.Crop
+                        .fillMaxWidth(),
+                    contentScale = ContentScale.Fit
                 )
                 Spacer(modifier = Modifier.height(8.dp))
             }
