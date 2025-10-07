@@ -103,7 +103,7 @@ fun TaskItem(task: Task) {
             task.date?.let {
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
-                    text = "Fecha: ${SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault()).format(it)}",
+                    text = "Fecha: ${SimpleDateFormat("dd-MM-yyyy HH:mm", Locale.getDefault()).format(it)}",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onPrimary
                 )
