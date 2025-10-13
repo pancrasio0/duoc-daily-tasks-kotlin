@@ -295,8 +295,8 @@ fun AddTaskScreen(
                     taskViewModel.addTask(
                         title = title,
                         description = finalDescription,
-                        imageUri = finalImageUri,notificationTime = notificationTimestamp, // Ahora la línea es correcta
-                        context = context
+                        imageUri = finalImageUri,
+                        notificationTime = notificationTimestamp
                     )
 
 

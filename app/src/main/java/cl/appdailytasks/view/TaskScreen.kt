@@ -84,7 +84,7 @@ fun TaskScreen(
                 val dismissState = rememberSwipeToDismissBoxState(
                     confirmValueChange = {
                         if (it == SwipeToDismissBoxValue.EndToStart) {
-                            taskViewModel.removeTask(task, context)
+                            taskViewModel.removeTask(task)
                             true
                         } else {
                             false

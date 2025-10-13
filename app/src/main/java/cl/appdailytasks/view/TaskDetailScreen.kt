@@ -133,7 +133,7 @@ fun TaskDetailScreen(
                 onClick = {
                     if (isFormValid) {
                         if (task == null) {
-                            taskViewModel.addTask(title, description, imageUri, notificationTime, context)
+                            taskViewModel.addTask(title, description, imageUri, notificationTime)
                         } else {
                             val updatedTask = task.copy(
                                 title = title,
@@ -141,7 +141,7 @@ fun TaskDetailScreen(
                                 imageUri = imageUri,
                                 notificationTime = notificationTime
                             )
-                            taskViewModel.updateTask(updatedTask, context)
+                            taskViewModel.updateTask(updatedTask)
                         }
                         onNavigateBack()
                     }

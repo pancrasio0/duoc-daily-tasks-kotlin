@@ -2,6 +2,7 @@ package cl.appdailytasks
 
 import android.Manifest
 import android.app.AlarmManager
+import android.app.Application
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -21,6 +22,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -31,7 +33,7 @@ import cl.appdailytasks.ui.theme.AppdailytasksTheme
 import cl.appdailytasks.view.TaskDetailScreen
 import cl.appdailytasks.view.TaskScreen
 import cl.appdailytasks.viewmodel.TaskViewModel
-import cl.appdailytasks.model.Task
+
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -51,8 +53,9 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun AppNavigation() {
     val navController = rememberNavController()
-    val taskViewModel: TaskViewModel = viewModel()
     val context = LocalContext.current
+    val taskViewModel: TaskViewModel = viewModel(factory = ViewModelProvider.AndroidViewModelFactory(context.applicationContext as Application))
+
 
     val permissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission(),
