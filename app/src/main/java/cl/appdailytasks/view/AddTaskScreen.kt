@@ -1,15 +1,25 @@
 package cl.appdailytasks.view
 
+
+import android.Manifest
 import android.app.DatePickerDialog
 import android.app.TimePickerDialog
-import android.widget.DatePicker
-import android.widget.TimePicker
+import android.content.Context
+import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
@@ -22,28 +32,18 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.core.content.FileProvider
 import cl.appdailytasks.viewmodel.TaskViewModel
+import coil.compose.rememberAsyncImagePainter
+import java.io.File
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.time.format.DateTimeParseException
 import java.util.Calendar
-import android.net.Uri
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.runtime.LaunchedEffect
-import java.io.File
-import androidx.core.content.FileProvider
-import java.util.Objects
-import android.content.Context
-import android.Manifest
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.height
-import androidx.compose.ui.Alignment
-import coil.compose.rememberAsyncImagePainter
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -63,6 +63,7 @@ fun AddTaskScreen(
 
     val isTitleValid = title.length > 3
     val isDescriptionValid = description.isEmpty() || description.length > 3
+
 
 
 
@@ -108,7 +109,12 @@ fun AddTaskScreen(
                 )
                 val formattedDateTime = selectedDateTime.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"))
                 dateTime = formattedDateTime
-                dateError = if (!isValidDateTime(formattedDateTime  )) "La fecha no puede ser del pasado" else null
+                // Validar que la fecha y hora seleccionada no sea anterior a la actual.
+                dateError = if (selectedDateTime.isBefore(LocalDateTime.now())) {
+                    "La fecha no puede ser del pasado"
+                } else {
+                    null
+                }
             }
 
             TimePickerDialog(
@@ -126,6 +132,18 @@ fun AddTaskScreen(
     var imageUri by remember { mutableStateOf<Uri?>(null) }
     var tempImageUri by remember { mutableStateOf<Uri?>(null) }
 
+
+    val galleryLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent(),
+        onResult = { uri: Uri? ->
+            // Cuando el usuario elige una imagen de la galería,
+            // la asignamos directamente a nuestro estado principal.
+            imageUri = uri
+            imageUrl = uri?.toString() ?: ""
+        }
+    )
+
+
     val cameraLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.TakePicture(),
         onResult = { isSuccess ->
@@ -136,13 +154,16 @@ fun AddTaskScreen(
         }
     )
 
+
+
     val permissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission(),
         onResult = { isGranted ->
             if (isGranted) {
-                val uri = createImageUri(context)
-                tempImageUri = uri
-                cameraLauncher.launch(tempImageUri)
+                createImageUri(context)?.let { uri ->
+                    tempImageUri = uri
+                    cameraLauncher.launch(uri)
+                }
             } else {
             }
         }
@@ -215,37 +236,107 @@ fun AddTaskScreen(
                 Spacer(modifier = Modifier.height(8.dp))
             }
 
-            Button(
-                onClick = {
-                    permissionLauncher.launch(Manifest.permission.CAMERA)
-                },
-                modifier = Modifier.align(Alignment.CenterHorizontally)
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceAround, // Espacio entre botones
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(if (imageUri == null) "Añadir Foto" else "Tomar Otra Foto")
+                // Tu botón original para la cámara, ahora dentro de un Row
+                Button(onClick = { permissionLauncher.launch(Manifest.permission.CAMERA) }) {
+                    Text(if (imageUri == null) "Tomar Foto" else "Tomar Otra")
+                }
+
+                // El nuevo botón para la galería
+                Button(onClick = { galleryLauncher.launch("image/*") }) {
+                    Text("Galería")
+                }
             }
+
+            // Botón condicional para quitar la imagen
+            if (imageUri != null) {
+                Button(
+                    onClick = {
+                        imageUri = null
+                        imageUrl = "" // Limpia ambos estados
+                    },
+                    modifier = Modifier
+                        .align(Alignment.CenterHorizontally)
+                        .padding(top = 8.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
+                ) {
+                    Text("Quitar Imagen")
+                }
+            }
+
+
+
+            Spacer(modifier = Modifier.height(16.dp))
 
             Button(
                 onClick = {
-                    taskViewModel.addTask(title, description, dateTime, imageUrl)
+
+                    val finalDescription = if (descriptionError == null) description else ""
+
+
+                    val finalImageUri: Uri? = imageUri
+
+
+                    val notificationTimestamp: Long? = if (dateTime.isNotEmpty() && dateError == null) {
+                        try {
+
+                            val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")
+                            val localDateTime = LocalDateTime.parse(dateTime, formatter)
+
+
+                            localDateTime.atZone(java.time.ZoneId.systemDefault()).toInstant().toEpochMilli()
+                        } catch (e: DateTimeParseException) {
+
+                            null
+                        }
+                    } else {
+
+                        null
+                    }
+
+
+                    taskViewModel.addTask(
+                        title = title,
+                        description = finalDescription,
+                        imageUri = finalImageUri,notificationTime = notificationTimestamp, // Ahora la línea es correcta
+                        context = context
+                    )
+
+
+
+
                     onTaskAdded()
                 },
                 enabled = isButtonEnabled,
-                modifier = Modifier.padding(top = 16.dp)
+                modifier = Modifier
+                    .fillMaxWidth() // Que ocupe todo el ancho para que sea más fácil de pulsar.
+                    .padding(top = 16.dp)
             ) {
                 Text("Guardar Tarea")
             }
         }
     }
 }
-private fun createImageUri(context: Context): Uri {
+private fun createImageUri(context: Context): Uri? {
+    val imageFolder = File(context.externalCacheDir, "camera_images")
+    if (!imageFolder.exists()) {
+        imageFolder.mkdirs()
+    }
     val file = File.createTempFile(
         "JPEG_${System.currentTimeMillis()}_",
         ".jpg",
-        context.externalCacheDir
+        imageFolder
     )
     return FileProvider.getUriForFile(
-        Objects.requireNonNull(context),
+        context,
         "cl.appdailytasks.provider",
         file
     )
 }
+
+

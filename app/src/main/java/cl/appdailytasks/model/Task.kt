@@ -7,5 +7,6 @@ data class Task(
     val name: String,
     val description: String? = null,
     val date: Date? = null, // La fecha puede ser opcional
-    val imageUrl: String? = null // La imagen puede ser opcional
+    val imageUrl: Any? = null
+
 )

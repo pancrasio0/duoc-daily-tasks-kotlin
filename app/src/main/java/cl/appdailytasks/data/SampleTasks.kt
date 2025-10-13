@@ -14,11 +14,11 @@ object SampleTasks {
         ),
         Task(
             id = 2,
-            name = "Estudiar Jetpack Compose",
-            description = "Revisar la documentación oficial y hacer un ejemplo.",
+            name = "Realizar avances en la documentación",description = "Revisar la documentación oficial y Realizar avances.",
             date = Date(),
-            imageUrl = "https://developer.android.com/static/images/jetpack/compose-icon.svg"
+            imageUrl = "https://images.pexels.com/photos/5926382/pexels-photo-5926382.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1"
         ),
+
         Task(
             id = 3,
             name = "Hacer ejercicio",
@@ -28,11 +28,17 @@ object SampleTasks {
         ),
         Task(
             id = 4,
-            name = "Hacer ejercicio 2",
-            description = null,
+            name = "Correr en el simulador",
+            description = "Hacer practicas, Qualy y Carrera como tal. ",
             date = Date(),
-            imageUrl = "https://images.pexels.com/photos/4753997/pexels-photo-4753997.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500"
+            imageUrl = "https://images.pexels.com/photos/1545743/pexels-photo-1545743.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1"
+
+
+
+
         )
+
+
 
     )
 }
