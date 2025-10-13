@@ -84,20 +84,12 @@ fun AddTaskScreen(
 
     val context = LocalContext.current
     val calendar = Calendar.getInstance()
-    val year = calendar.get(Calendar.YEAR)
-    val month = calendar.get(Calendar.MONTH)
-    val day = calendar.get(Calendar.DAY_OF_MONTH)
-    val hour = calendar.get(Calendar.HOUR_OF_DAY)
-    val minute = calendar.get(Calendar.MINUTE)
-
 
     val datePickerDialog = DatePickerDialog(
         context,
         { _, selectedYear, selectedMonth, selectedDay ->
-            val now = Calendar.getInstance()
-            now.add(Calendar.MINUTE, 1)
-            val currentHour = now.get(Calendar.HOUR_OF_DAY)
-            val currentMinute = now.get(Calendar.MINUTE)
+            val timePickerCalendar = Calendar.getInstance()
+            timePickerCalendar.add(Calendar.MINUTE, 1) // Set default time to now + 1 minute
 
             val timeSetListener = TimePickerDialog.OnTimeSetListener { _, selectedHour, selectedMinute ->
                 val selectedDateTime = LocalDateTime.of(
@@ -109,7 +101,6 @@ fun AddTaskScreen(
                 )
                 val formattedDateTime = selectedDateTime.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"))
                 dateTime = formattedDateTime
-                // Validar que la fecha y hora seleccionada no sea anterior a la actual.
                 dateError = if (selectedDateTime.isBefore(LocalDateTime.now())) {
                     "La fecha no puede ser del pasado"
                 } else {
@@ -120,13 +111,14 @@ fun AddTaskScreen(
             TimePickerDialog(
                 context,
                 timeSetListener,
-                currentHour,
-                currentMinute,
+                timePickerCalendar.get(Calendar.HOUR_OF_DAY),
+                timePickerCalendar.get(Calendar.MINUTE),
                 true
             ).show()
-
         },
-        year, month, day
+        calendar.get(Calendar.YEAR),
+        calendar.get(Calendar.MONTH),
+        calendar.get(Calendar.DAY_OF_MONTH)
     )
 
     var imageUri by remember { mutableStateOf<Uri?>(null) }
@@ -242,7 +234,7 @@ fun AddTaskScreen(
                 horizontalArrangement = Arrangement.SpaceAround, // Espacio entre botones
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // Tu botón original para la cámara, ahora dentro de un Row
+
                 Button(onClick = { permissionLauncher.launch(Manifest.permission.CAMERA) }) {
                     Text(if (imageUri == null) "Tomar Foto" else "Tomar Otra")
                 }
@@ -338,5 +330,4 @@ private fun createImageUri(context: Context): Uri? {
         file
     )
 }
-
 

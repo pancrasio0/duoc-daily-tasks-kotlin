@@ -16,14 +16,8 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-
-data class Task(
-    val id: Int = (System.currentTimeMillis() % Int.MAX_VALUE).toInt(),
-    val title: String,
-    val description: String,
-    val imageUri: Uri? = null,
-    val notificationTime: Long? = null
-)
+import cl.appdailytasks.model.Task
+import cl.appdailytasks.data.SampleTasks
 
 class TaskViewModel : ViewModel() {
 
@@ -32,37 +26,8 @@ class TaskViewModel : ViewModel() {
 
     init {
         if (_tasks.value.isEmpty()) {
-            _tasks.value = getPredefinedTasks()
+            _tasks.value = SampleTasks.sampleTasksList
         }
-    }
-
-    private fun getPredefinedTasks(): List<Task> {
-        return listOf(
-            Task(
-                id = 1,
-                title = "Comprar lista de la compra",
-                description = "Leche, pan, huevos y fruta para la semana.",
-                imageUri = "https://images.pexels.com/photos/1640777/pexels-photo-1640777.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500".toUri()
-            ),
-            Task(
-                id = 2,
-                title = "Realizar avances en la documentación",
-                description = "Revisar la documentación oficial y Realizar avances.",
-                imageUri = "https://images.pexels.com/photos/5926382/pexels-photo-5926382.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1".toUri()
-            ),
-            Task(
-                id = 3,
-                title = "Hacer ejercicio",
-                description = "30 minutos de cardio en la trotadora.",
-                imageUri = "https://images.pexels.com/photos/4753997/pexels-photo-4753997.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500".toUri()
-            ),
-            Task(
-                id = 4,
-                title = "Correr en el simulador",
-                description = "Hacer practicas, Qualy y Carrera como tal.",
-                imageUri = "https://images.pexels.com/photos/1545743/pexels-photo-1545743.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1".toUri()
-            )
-        )
     }
 
     fun getTask(id: Int): Task? {

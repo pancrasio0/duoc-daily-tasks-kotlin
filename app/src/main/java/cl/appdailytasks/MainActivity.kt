@@ -31,7 +31,7 @@ import cl.appdailytasks.ui.theme.AppdailytasksTheme
 import cl.appdailytasks.view.TaskDetailScreen
 import cl.appdailytasks.view.TaskScreen
 import cl.appdailytasks.viewmodel.TaskViewModel
-
+import cl.appdailytasks.model.Task
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
