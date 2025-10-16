@@ -42,6 +42,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import cl.appdailytasks.model.Task
 import cl.appdailytasks.viewmodel.TaskViewModel
 import coil.compose.AsyncImage
+import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -136,12 +137,11 @@ fun TaskItem(task: Task, onTaskClick: (Task) -> Unit) {
         Column(modifier = Modifier.padding(16.dp)) {
             task.imageUri?.let { uri ->
                 AsyncImage(
-                    model = uri,
+                    model = File(uri),
                     contentDescription = "Imagen de la tarea",
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .height(180.dp),
-                    contentScale = ContentScale.Crop,
+                        .fillMaxWidth(),
+                    contentScale = ContentScale.Fit,
                     error = painterResource(id = R.drawable.ic_menu_report_image)
                 )
                 Spacer(modifier = Modifier.height(16.dp))
