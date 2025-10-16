@@ -4,7 +4,6 @@ import android.content.ContentValues
 import android.content.Context
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
-import android.net.Uri
 import cl.appdailytasks.model.Task
 
 // Clase Helper para gestionar la base de datos
@@ -48,7 +47,7 @@ class TaskDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_
             put(COLUMN_ID, task.id)
             put(COLUMN_TITLE, task.title)
             put(COLUMN_DESCRIPTION, task.description)
-            put(COLUMN_IMAGE_URI, task.imageUri?.toString())
+            put(COLUMN_IMAGE_URI, task.imageUri)
             put(COLUMN_NOTIFICATION_TIME, task.notificationTime)
         }
         return db.insert(TABLE_TASKS, null, values)
@@ -85,7 +84,7 @@ class TaskDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_
                         id = id,
                         title = title,
                         description = description,
-                        imageUri = imageUriString?.let { Uri.parse(it) },
+                        imageUri = imageUriString,
                         notificationTime = notificationTime
                     )
                 )
@@ -123,7 +122,7 @@ class TaskDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_
                 id = id,
                 title = title,
                 description = description,
-                imageUri = imageUriString?.let { Uri.parse(it) },
+                imageUri = imageUriString,
                 notificationTime = notificationTime
             )
         }
@@ -137,7 +136,7 @@ class TaskDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_
         val values = ContentValues().apply {
             put(COLUMN_TITLE, task.title)
             put(COLUMN_DESCRIPTION, task.description)
-            put(COLUMN_IMAGE_URI, task.imageUri?.toString())
+            put(COLUMN_IMAGE_URI, task.imageUri)
             put(COLUMN_NOTIFICATION_TIME, task.notificationTime)
         }
         return db.update(

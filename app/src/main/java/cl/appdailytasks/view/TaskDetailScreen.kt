@@ -1,6 +1,8 @@
 package cl.appdailytasks.view
 
+import android.Manifest
 import android.content.Context
+import android.content.pm.PackageManager
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -37,12 +39,33 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import cl.appdailytasks.viewmodel.TaskViewModel
+import coil.compose.AsyncImage
 import java.io.File
 import java.util.Calendar
+
+private fun copyUriContentToInternalStorage(context: Context, sourceUri: Uri): String? {
+    return try {
+        val inputStream = context.contentResolver.openInputStream(sourceUri) ?: return null
+        val imageFolder = File(context.filesDir, "task_images")
+        if (!imageFolder.exists()) {
+            imageFolder.mkdirs()
+        }
+        val file = File(imageFolder, "IMG_${System.currentTimeMillis()}.jpg")
+        file.outputStream().use { outputStream ->
+            inputStream.use { it.copyTo(outputStream) }
+        }
+        file.absolutePath
+    } catch (e: Exception) {
+        e.printStackTrace()
+        null
+    }
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -56,28 +79,53 @@ fun TaskDetailScreen(
 
     var title by remember { mutableStateOf(task?.title ?: "") }
     var description by remember { mutableStateOf(task?.description ?: "") }
-    var imageUri by remember { mutableStateOf<Uri?>(task?.imageUri) }
+    var imageUri by remember { mutableStateOf(task?.imageUri) } // This is now a file path string or null
     var notificationTime by remember { mutableStateOf(task?.notificationTime) }
 
     var showImageSourceDialog by remember { mutableStateOf(false) }
 
-    val isFormValid = title.length > 3 && description.length > 3
+    val isFormValid = title.length > 3 && (description.length > 3 || description.isEmpty())
+
+    var tempCameraPhotoPath by remember { mutableStateOf<String?>(null) }
 
     val galleryLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent(),
-        onResult = { uri: Uri? -> imageUri = uri }
+        onResult = { uri: Uri? ->
+            uri?.let {
+                imageUri = copyUriContentToInternalStorage(context, it)
+            }
+        }
     )
 
-    fun createImageUri(): Uri {
-        val file = File(context.cacheDir, "temp_image.jpg")
-        return FileProvider.getUriForFile(context, "${context.packageName}.provider", file)
+    fun createCameraImageFile(): File {
+        val imageFolder = File(context.filesDir, "task_images")
+        if (!imageFolder.exists()) {
+            imageFolder.mkdirs()
+        }
+        return File.createTempFile("IMG_", ".jpg", imageFolder)
     }
 
     val cameraLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.TakePicture(),
         onResult = { success ->
             if (success) {
-                // URI is already set and will be used
+                imageUri = tempCameraPhotoPath
+            }
+        }
+    )
+
+    val requestPermissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission(),
+        onResult = { isGranted: Boolean ->
+            if (isGranted) {
+                val photoFile = createCameraImageFile()
+                tempCameraPhotoPath = photoFile.absolutePath
+                val photoUri = FileProvider.getUriForFile(
+                    context,
+                    "cl.appdailytasks.provider",
+                    photoFile
+                )
+                cameraLauncher.launch(photoUri)
             }
         }
     )
@@ -99,8 +147,7 @@ fun TaskDetailScreen(
                 .fillMaxSize()
                 .padding(innerPadding)
                 .padding(16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
             OutlinedTextField(
                 value = title,
@@ -120,10 +167,28 @@ fun TaskDetailScreen(
                 supportingText = { if (description.isNotEmpty() && description.length <= 3) Text("La descripción es muy corta") }
             )
             Spacer(modifier = Modifier.height(16.dp))
+
+            imageUri?.let { path ->
+                AsyncImage(
+                    model = File(path),
+                    contentDescription = "Imagen seleccionada",
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(200.dp),
+                    contentScale = ContentScale.Crop
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Button(onClick = { imageUri = null }) {
+                    Text("Quitar Imagen")
+                }
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
             Button(onClick = { showImageSourceDialog = true }) {
                 Text("Seleccionar Imagen")
             }
-            imageUri?.let { Text("Imagen seleccionada", modifier = Modifier.padding(top = 8.dp)) }
+
             Spacer(modifier = Modifier.height(16.dp))
             DateTimePicker(context, notificationTime) { newTime ->
                 notificationTime = newTime
@@ -132,12 +197,13 @@ fun TaskDetailScreen(
             Button(
                 onClick = {
                     if (isFormValid) {
+                        val finalDescription = if(description.isEmpty()) " " else description
                         if (task == null) {
-                            taskViewModel.addTask(title, description, imageUri, notificationTime)
+                            taskViewModel.addTask(title, finalDescription, imageUri, notificationTime)
                         } else {
                             val updatedTask = task.copy(
                                 title = title,
-                                description = description,
+                                description = finalDescription,
                                 imageUri = imageUri,
                                 notificationTime = notificationTime
                             )
@@ -146,7 +212,8 @@ fun TaskDetailScreen(
                         onNavigateBack()
                     }
                 },
-                enabled = isFormValid
+                enabled = isFormValid,
+                modifier = Modifier.fillMaxWidth()
             ) {
                 Text(if (task == null) "Crear Tarea" else "Guardar Cambios")
             }
@@ -162,9 +229,24 @@ fun TaskDetailScreen(
                 TextButton(
                     onClick = {
                         showImageSourceDialog = false
-                        val newUri = createImageUri()
-                        imageUri = newUri
-                        cameraLauncher.launch(newUri)
+                        when (PackageManager.PERMISSION_GRANTED) {
+                            ContextCompat.checkSelfPermission(
+                                context,
+                                Manifest.permission.CAMERA
+                            ) -> {
+                                val photoFile = createCameraImageFile()
+                                tempCameraPhotoPath = photoFile.absolutePath
+                                val photoUri = FileProvider.getUriForFile(
+                                    context,
+                                    "cl.appdailytasks.provider",
+                                    photoFile
+                                )
+                                cameraLauncher.launch(photoUri)
+                            }
+                            else -> {
+                                requestPermissionLauncher.launch(Manifest.permission.CAMERA)
+                            }
+                        }
                     }
                 ) { Text("Cámara") }
             },

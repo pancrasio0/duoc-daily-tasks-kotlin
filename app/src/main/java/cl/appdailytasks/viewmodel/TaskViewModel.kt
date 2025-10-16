@@ -5,7 +5,6 @@ import android.app.Application
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
-import android.net.Uri
 import android.os.Build
 import android.widget.Toast
 import androidx.lifecycle.AndroidViewModel
@@ -38,15 +37,12 @@ class TaskViewModel(application: Application) : AndroidViewModel(application) {
         return _tasks.value.find { it.id == id }
     }
 
-    fun addTask(title: String, description: String, imageUri: Uri?, notificationTime: Long?) {
+    fun addTask(title: String, description: String, imageUri: String?, notificationTime: Long?) {
         viewModelScope.launch {
             val newTask = Task(title = title, description = description, imageUri = imageUri, notificationTime = notificationTime)
-            val newId = dbHelper.insertTask(newTask)
+            dbHelper.insertTask(newTask)
             loadTasks() // Recargar tareas para obtener la lista actualizada con el nuevo ID
             if (notificationTime != null) {
-                // Necesitamos encontrar la tarea que acabamos de insertar para obtener su ID de la base de datos
-                // Una forma simple pero no la más eficiente es buscarla por sus atributos
-                // Una mejor implementación de dbHelper.insertTask devolvería el objeto completo o su ID de forma más directa
                 val insertedTask = dbHelper.getAllTasks().find { it.title == title && it.description == description && it.notificationTime == notificationTime }
                 insertedTask?.let {
                     scheduleNotification(getApplication(), it)
@@ -96,7 +92,7 @@ class TaskViewModel(application: Application) : AndroidViewModel(application) {
             putExtra("TASK_ID", task.id)
             putExtra("TASK_TITLE", task.title)
             putExtra("TASK_DESC", task.description)
-            task.imageUri?.let { putExtra("TASK_IMAGE_URI", it.toString()) }
+            task.imageUri?.let { putExtra("TASK_IMAGE_URI", it) }
         }
         val pendingIntent = PendingIntent.getBroadcast(context, task.id, intent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
         task.notificationTime?.let {

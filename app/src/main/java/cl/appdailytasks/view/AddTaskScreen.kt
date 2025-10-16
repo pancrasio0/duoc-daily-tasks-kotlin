@@ -55,7 +55,7 @@ fun AddTaskScreen(
     var title by remember { mutableStateOf("") }
     var description by remember { mutableStateOf("") }
     var dateTime by remember { mutableStateOf("") }
-    var imageUrl by remember { mutableStateOf("") }
+    var imageUri by remember { mutableStateOf<String?>(null) }
 
     var titleError by remember { mutableStateOf<String?>(null) }
     var descriptionError by remember { mutableStateOf<String?>(null) }
@@ -63,9 +63,6 @@ fun AddTaskScreen(
 
     val isTitleValid = title.length > 3
     val isDescriptionValid = description.isEmpty() || description.length > 3
-
-
-
 
     fun isValidDateTime(dateTimeStr: String): Boolean {
         if (dateTimeStr.isEmpty()) return true
@@ -121,32 +118,23 @@ fun AddTaskScreen(
         calendar.get(Calendar.DAY_OF_MONTH)
     )
 
-    var imageUri by remember { mutableStateOf<Uri?>(null) }
     var tempImageUri by remember { mutableStateOf<Uri?>(null) }
-
 
     val galleryLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent(),
         onResult = { uri: Uri? ->
-            // Cuando el usuario elige una imagen de la galería,
-            // la asignamos directamente a nuestro estado principal.
-            imageUri = uri
-            imageUrl = uri?.toString() ?: ""
+            imageUri = uri?.toString()
         }
     )
-
 
     val cameraLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.TakePicture(),
         onResult = { isSuccess ->
             if (isSuccess) {
-                imageUri = tempImageUri
-                imageUrl = tempImageUri.toString()
+                imageUri = tempImageUri.toString()
             }
         }
     )
-
-
 
     val permissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission(),
@@ -228,7 +216,6 @@ fun AddTaskScreen(
                 Spacer(modifier = Modifier.height(8.dp))
             }
 
-
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceAround, // Espacio entre botones
@@ -250,7 +237,6 @@ fun AddTaskScreen(
                 Button(
                     onClick = {
                         imageUri = null
-                        imageUrl = "" // Limpia ambos estados
                     },
                     modifier = Modifier
                         .align(Alignment.CenterHorizontally)
@@ -261,18 +247,12 @@ fun AddTaskScreen(
                 }
             }
 
-
-
             Spacer(modifier = Modifier.height(16.dp))
 
             Button(
                 onClick = {
 
                     val finalDescription = if (descriptionError == null) description else ""
-
-
-                    val finalImageUri: Uri? = imageUri
-
 
                     val notificationTimestamp: Long? = if (dateTime.isNotEmpty() && dateError == null) {
                         try {
@@ -291,16 +271,12 @@ fun AddTaskScreen(
                         null
                     }
 
-
                     taskViewModel.addTask(
                         title = title,
                         description = finalDescription,
-                        imageUri = finalImageUri,
+                        imageUri = imageUri,
                         notificationTime = notificationTimestamp
                     )
-
-
-
 
                     onTaskAdded()
                 },
