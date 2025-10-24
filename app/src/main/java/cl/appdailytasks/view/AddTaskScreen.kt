@@ -52,6 +52,7 @@ fun AddTaskScreen(
     taskViewModel: TaskViewModel,
     onTaskAdded: () -> Unit
 ) {
+    // Declaración de variables
     var title by remember { mutableStateOf("") }
     var description by remember { mutableStateOf("") }
     var dateTime by remember { mutableStateOf("") }
@@ -63,7 +64,7 @@ fun AddTaskScreen(
 
     val isTitleValid = title.length > 3
     val isDescriptionValid = description.isEmpty() || description.length > 3
-
+    // Validación de si formato fecha es correcto
     fun isValidDateTime(dateTimeStr: String): Boolean {
         if (dateTimeStr.isEmpty()) return true
 
@@ -96,6 +97,7 @@ fun AddTaskScreen(
                     selectedHour,
                     selectedMinute
                 )
+                // Verificacion de fecha pasada
                 val formattedDateTime = selectedDateTime.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"))
                 dateTime = formattedDateTime
                 dateError = if (selectedDateTime.isBefore(LocalDateTime.now())) {
@@ -104,7 +106,7 @@ fun AddTaskScreen(
                     null
                 }
             }
-
+            // Apertura de calendario
             TimePickerDialog(
                 context,
                 timeSetListener,
@@ -113,20 +115,21 @@ fun AddTaskScreen(
                 true
             ).show()
         },
+        // Asignacion de variables
         calendar.get(Calendar.YEAR),
         calendar.get(Calendar.MONTH),
         calendar.get(Calendar.DAY_OF_MONTH)
     )
 
     var tempImageUri by remember { mutableStateOf<Uri?>(null) }
-
+    // Apertura de galeria
     val galleryLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent(),
         onResult = { uri: Uri? ->
             imageUri = uri?.toString()
         }
     )
-
+    // Apertura de camara
     val cameraLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.TakePicture(),
         onResult = { isSuccess ->
@@ -135,7 +138,7 @@ fun AddTaskScreen(
             }
         }
     )
-
+    // Pedido de permisos si hacen falta
     val permissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission(),
         onResult = { isGranted ->
@@ -148,7 +151,7 @@ fun AddTaskScreen(
             }
         }
     )
-
+    // Titulo de la pantalla
     Scaffold(
         topBar = {
             TopAppBar(
@@ -165,7 +168,7 @@ fun AddTaskScreen(
                 .fillMaxSize()
                 .padding(innerPadding)
                 .padding(16.dp)
-        ) {
+        ) { //Campo de titulo
             OutlinedTextField(
                 value = title,
                 onValueChange = {
@@ -177,7 +180,7 @@ fun AddTaskScreen(
                 isError = titleError != null,
                 supportingText = { titleError?.let { Text(it, color = MaterialTheme.colorScheme.error) } }
             )
-
+            // Campo de descripcion
             OutlinedTextField(
                 value = description,
                 onValueChange = {
@@ -191,7 +194,7 @@ fun AddTaskScreen(
                 isError = descriptionError != null,
                 supportingText = { descriptionError?.let { Text(it, color = MaterialTheme.colorScheme.error) } }
             )
-
+            // Campo de fecha y hora
             OutlinedTextField(
                 value = dateTime,
                 onValueChange = {},
@@ -204,7 +207,7 @@ fun AddTaskScreen(
                 isError = dateError != null,
                 supportingText = { dateError?.let { Text(it, color = MaterialTheme.colorScheme.error) } }
             )
-
+            // Campo de vista previa, solo se ve si hay imagen en el momento
             if (imageUri != null) {
                 Image(
                     painter = rememberAsyncImagePainter(model = imageUri),
@@ -290,6 +293,7 @@ fun AddTaskScreen(
         }
     }
 }
+// Funcion de ayuda para crear la imagen en un archivo temporal
 private fun createImageUri(context: Context): Uri? {
     val imageFolder = File(context.externalCacheDir, "camera_images")
     if (!imageFolder.exists()) {

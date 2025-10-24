@@ -11,13 +11,13 @@ import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.graphics.Color
-
+// Colores de modo oscuro
 private val DarkColorScheme = darkColorScheme(
     primary = Purple80,
     secondary = PurpleGrey80,
     tertiary = Pink80
 )
-
+// Colores de modo claro
 private val LightColorScheme = lightColorScheme(
     primary = MediumPurple,
     secondary = DarkGray,
@@ -33,9 +33,11 @@ private val LightColorScheme = lightColorScheme(
 fun AppdailytasksTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
     // Dynamic color is available on Android 12+
+    // Habilita el color dinamico segun tema del celular
     dynamicColor: Boolean = true,
     content: @Composable () -> Unit
 ) {
+    // Se asigna a colorscheme segun el tema del telefono
     val colorScheme = when {
         dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
             val context = LocalContext.current
@@ -45,7 +47,7 @@ fun AppdailytasksTheme(
         darkTheme -> DarkColorScheme
         else -> LightColorScheme
     }
-
+    // Asigna los colores
     MaterialTheme(
         colorScheme = colorScheme,
         typography = Typography,

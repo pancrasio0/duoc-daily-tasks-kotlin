@@ -8,7 +8,7 @@ import cl.appdailytasks.model.Task
 
 // Clase Helper para gestionar la base de datos
 class TaskDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, null, DATABASE_VERSION) {
-
+    //Creacion de la base de datos
     companion object {
         private const val DATABASE_NAME = "tasks.db"
         private const val DATABASE_VERSION = 1
@@ -21,7 +21,7 @@ class TaskDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_
         private const val COLUMN_IMAGE_URI = "image_uri"
         private const val COLUMN_NOTIFICATION_TIME = "notification_time"
     }
-
+    // Cuando se hace por primera vez, se crea la tabla con este ddl
     override fun onCreate(db: SQLiteDatabase) {
         val createTable = """
             CREATE TABLE $TABLE_TASKS (
@@ -34,7 +34,7 @@ class TaskDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_
         """.trimIndent()
         db.execSQL(createTable)
     }
-
+    // En caso de cambios en el modelo y se necesiten mas tablas, se borran antes de crearla de nuevo de 0
     override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
         db.execSQL("DROP TABLE IF EXISTS $TABLE_TASKS")
         onCreate(db)
@@ -66,7 +66,7 @@ class TaskDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_
             null,
             null
         )
-
+        // Ciclo que recorre cada columna de la base de datos y la agrega a la lista de tareas
         with(cursor) {
             while (moveToNext()) {
                 val id = getInt(getColumnIndexOrThrow(COLUMN_ID))
@@ -78,7 +78,7 @@ class TaskDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_
                 } else {
                     getLong(getColumnIndexOrThrow(COLUMN_NOTIFICATION_TIME))
                 }
-
+                // Agrega a la lista de tareas como objeto
                 tasks.add(
                     Task(
                         id = id,

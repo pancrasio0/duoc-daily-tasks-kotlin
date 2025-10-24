@@ -5,7 +5,7 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.os.Build
 
-
+// Deprecado
 class TaskApp : Application() {
     override fun onCreate() {
         super.onCreate()

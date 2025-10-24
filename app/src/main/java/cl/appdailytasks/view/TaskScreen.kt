@@ -46,7 +46,7 @@ import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
-
+// Pantalla principal que muestra todas las tareas y presenta un botón para ir al formulario
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TaskScreen(

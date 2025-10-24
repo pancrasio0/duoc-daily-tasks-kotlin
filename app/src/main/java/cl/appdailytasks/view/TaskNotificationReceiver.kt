@@ -16,7 +16,7 @@ import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
 import cl.appdailytasks.MainActivity
 import cl.appdailytasks.R
-
+// Funcion para crear notificaciones de las tareas
 class TaskNotificationReceiver : BroadcastReceiver() {
 
     override fun onReceive(context: Context, intent: Intent) {
@@ -28,6 +28,7 @@ class TaskNotificationReceiver : BroadcastReceiver() {
         var taskImageBitmap: Bitmap? = null
 
         // ÚNICAMENTE intentamos cargar una imagen si la tarea la tiene.
+        // Deprecado
         if (imageUriString != null) {
             val imageUri = Uri.parse(imageUriString)
             taskImageBitmap = try {

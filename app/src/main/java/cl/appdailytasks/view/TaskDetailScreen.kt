@@ -50,7 +50,7 @@ import cl.appdailytasks.viewmodel.TaskViewModel
 import coil.compose.AsyncImage
 import java.io.File
 import java.util.Calendar
-
+// Funcion que copia la direccion de imagen a almacenado interno del telefono para guardar
 private fun copyUriContentToInternalStorage(context: Context, sourceUri: Uri): String? {
     return try {
         val inputStream = context.contentResolver.openInputStream(sourceUri) ?: return null
@@ -68,7 +68,7 @@ private fun copyUriContentToInternalStorage(context: Context, sourceUri: Uri): S
         null
     }
 }
-
+// Carga los datos de una tarea en especifico y crea la pantalla
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TaskDetailScreen(

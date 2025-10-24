@@ -16,9 +16,9 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-
+// Viewmodel que maneja las funciones para las tareas
 class TaskViewModel(application: Application) : AndroidViewModel(application) {
-
+    // CRUD Básico de la aplicación usando taskdatabasehelper importado como dbhelper
     private val dbHelper = TaskDatabaseHelper(application)
     private val _tasks = MutableStateFlow<List<Task>>(emptyList())
     val tasks: StateFlow<List<Task>> = _tasks.asStateFlow()

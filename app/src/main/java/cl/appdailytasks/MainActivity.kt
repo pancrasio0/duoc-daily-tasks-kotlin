@@ -33,7 +33,7 @@ import cl.appdailytasks.ui.theme.AppdailytasksTheme
 import cl.appdailytasks.view.TaskDetailScreen
 import cl.appdailytasks.view.TaskScreen
 import cl.appdailytasks.viewmodel.TaskViewModel
-
+// Da inicio a la aplicacion
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -49,7 +49,7 @@ class MainActivity : ComponentActivity() {
         }
     }
 }
-
+// Maneja permisos cuando se abre por primera vez
 @Composable
 fun AppNavigation() {
     val navController = rememberNavController()
