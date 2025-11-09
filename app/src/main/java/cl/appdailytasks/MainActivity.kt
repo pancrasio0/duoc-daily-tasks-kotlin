@@ -30,10 +30,11 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import cl.appdailytasks.ui.theme.AppdailytasksTheme
+import cl.appdailytasks.view.LoginScreen
 import cl.appdailytasks.view.TaskDetailScreen
 import cl.appdailytasks.view.TaskScreen
 import cl.appdailytasks.viewmodel.TaskViewModel
-// Da inicio a la aplicacion
+
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -49,13 +50,12 @@ class MainActivity : ComponentActivity() {
         }
     }
 }
-// Maneja permisos cuando se abre por primera vez
+
 @Composable
 fun AppNavigation() {
     val navController = rememberNavController()
     val context = LocalContext.current
     val taskViewModel: TaskViewModel = viewModel(factory = ViewModelProvider.AndroidViewModelFactory(context.applicationContext as Application))
-
 
     val permissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission(),
@@ -83,7 +83,10 @@ fun AppNavigation() {
         }
     }
 
-    NavHost(navController = navController, startDestination = "taskList") {
+    NavHost(navController = navController, startDestination = "login") {
+        composable("login") {
+            LoginScreen(onOfflineMode = { navController.navigate("taskList") })
+        }
         composable("taskList") {
             TaskScreen(
                 taskViewModel = taskViewModel,
