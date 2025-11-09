@@ -19,7 +19,7 @@ import androidx.compose.ui.unit.dp
 import cl.appdailytasks.R
 
 @Composable
-fun LoginScreen(onOfflineMode: () -> Unit) {
+fun LoginScreen(onOfflineMode: () -> Unit, onGoogleSignIn: () -> Unit) {
     Surface(
         modifier = Modifier.fillMaxSize(),
         color = Color(165, 244, 255)
@@ -39,7 +39,7 @@ fun LoginScreen(onOfflineMode: () -> Unit) {
                 Text("Modo Offline")
             }
             Spacer(modifier = Modifier.height(16.dp))
-            Button(onClick = { /* TODO */ }) {
+            Button(onClick = onGoogleSignIn) {
                 Text("Conectar con Google")
             }
         }
