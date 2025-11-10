@@ -17,7 +17,6 @@ class GoogleAuthUiClient(
 
     private val googleSignInOptions = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
         .requestEmail()
-        .requestIdToken(context.getString(R.string.default_web_client_id))
         .build()
 
     private val googleSignInClient = GoogleSignIn.getClient(context, googleSignInOptions)

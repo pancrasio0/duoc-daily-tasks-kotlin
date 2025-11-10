@@ -138,7 +138,8 @@ fun AppNavigation() {
                 taskViewModel = taskViewModel,
                 onAddTask = { navController.navigate("taskDetail/null") },
                 onTaskClick = { task -> navController.navigate("taskDetail/${task.id}") },
-                onSignOut = { authViewModel.signOut() }
+                onSignOut = { authViewModel.signOut() },
+                googleUser = googleUser
             )
         }
         composable(
