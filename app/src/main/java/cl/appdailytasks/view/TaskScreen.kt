@@ -2,6 +2,7 @@ package cl.appdailytasks.view
 
 import android.R
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -10,8 +11,10 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
@@ -41,6 +44,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
@@ -69,7 +73,12 @@ private fun DrawerContent(user: GoogleSignInAccount?, onSignOut: () -> Unit) {
                 AsyncImage(
                     model = it.photoUrl,
                     contentDescription = "Foto de perfil",
-                    modifier = Modifier.padding(bottom = 8.dp)
+                    modifier = Modifier
+                        .size(100.dp)
+                        .clip(CircleShape)
+                        .border(2.dp, MaterialTheme.colorScheme.primary, CircleShape)
+                        .padding(bottom = 8.dp),
+                    contentScale = ContentScale.Crop
                 )
                 Text(it.displayName ?: "", style = MaterialTheme.typography.titleMedium)
                 Text(it.email ?: "", style = MaterialTheme.typography.bodySmall)
