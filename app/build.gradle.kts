@@ -51,6 +51,9 @@ dependencies {
     // Google Auth
     implementation(libs.play.services.auth)
     implementation(libs.kotlinx.coroutines.play.services)
+    implementation(libs.retrofit)
+    implementation(libs.converter.gson)
+    implementation(libs.logging.interceptor)
 
     implementation(platform(libs.androidx.compose.bom))
 

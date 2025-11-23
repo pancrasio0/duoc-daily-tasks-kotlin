@@ -11,7 +11,7 @@ class TaskDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_
     //Creacion de la base de datos
     companion object {
         private const val DATABASE_NAME = "tasks.db"
-        private const val DATABASE_VERSION = 1
+        private const val DATABASE_VERSION = 2 // Incremented version
 
         // Tabla y columnas
         private const val TABLE_TASKS = "tasks"
@@ -20,6 +20,7 @@ class TaskDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_
         private const val COLUMN_DESCRIPTION = "description"
         private const val COLUMN_IMAGE_URI = "image_uri"
         private const val COLUMN_NOTIFICATION_TIME = "notification_time"
+        private const val COLUMN_ID_GOOGLE = "id_google" // New column
     }
     // Cuando se hace por primera vez, se crea la tabla con este ddl
     override fun onCreate(db: SQLiteDatabase) {
@@ -29,7 +30,8 @@ class TaskDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_
                 $COLUMN_TITLE TEXT NOT NULL,
                 $COLUMN_DESCRIPTION TEXT NOT NULL,
                 $COLUMN_IMAGE_URI TEXT,
-                $COLUMN_NOTIFICATION_TIME INTEGER
+                $COLUMN_NOTIFICATION_TIME INTEGER,
+                $COLUMN_ID_GOOGLE TEXT
             )
         """.trimIndent()
         db.execSQL(createTable)
@@ -44,11 +46,14 @@ class TaskDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_
     fun insertTask(task: Task): Long {
         val db = writableDatabase
         val values = ContentValues().apply {
-            put(COLUMN_ID, task.id)
+            if (task.id != 0L) {
+                put(COLUMN_ID, task.id)
+            }
             put(COLUMN_TITLE, task.title)
             put(COLUMN_DESCRIPTION, task.description)
             put(COLUMN_IMAGE_URI, task.imageUri)
             put(COLUMN_NOTIFICATION_TIME, task.notificationTime)
+            put(COLUMN_ID_GOOGLE, task.idGoogle)
         }
         return db.insert(TABLE_TASKS, null, values)
     }
@@ -69,7 +74,7 @@ class TaskDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_
         // Ciclo que recorre cada columna de la base de datos y la agrega a la lista de tareas
         with(cursor) {
             while (moveToNext()) {
-                val id = getInt(getColumnIndexOrThrow(COLUMN_ID))
+                val id = getLong(getColumnIndexOrThrow(COLUMN_ID)) // Changed to getLong
                 val title = getString(getColumnIndexOrThrow(COLUMN_TITLE))
                 val description = getString(getColumnIndexOrThrow(COLUMN_DESCRIPTION))
                 val imageUriString = getString(getColumnIndexOrThrow(COLUMN_IMAGE_URI))
@@ -78,6 +83,8 @@ class TaskDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_
                 } else {
                     getLong(getColumnIndexOrThrow(COLUMN_NOTIFICATION_TIME))
                 }
+                val idGoogle = getString(getColumnIndexOrThrow(COLUMN_ID_GOOGLE))
+
                 // Agrega a la lista de tareas como objeto
                 tasks.add(
                     Task(
@@ -85,7 +92,8 @@ class TaskDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_
                         title = title,
                         description = description,
                         imageUri = imageUriString,
-                        notificationTime = notificationTime
+                        notificationTime = notificationTime,
+                        idGoogle = idGoogle
                     )
                 )
             }
@@ -95,7 +103,7 @@ class TaskDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_
     }
 
     // Obtener una tarea por ID
-    fun getTaskById(id: Int): Task? {
+    fun getTaskById(id: Long): Task? { // Changed to Long
         val db = readableDatabase
         val cursor = db.query(
             TABLE_TASKS,
@@ -117,13 +125,15 @@ class TaskDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_
             } else {
                 cursor.getLong(cursor.getColumnIndexOrThrow(COLUMN_NOTIFICATION_TIME))
             }
+            val idGoogle = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_ID_GOOGLE))
 
             task = Task(
                 id = id,
                 title = title,
                 description = description,
                 imageUri = imageUriString,
-                notificationTime = notificationTime
+                notificationTime = notificationTime,
+                idGoogle = idGoogle
             )
         }
         cursor.close()
@@ -138,6 +148,7 @@ class TaskDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_
             put(COLUMN_DESCRIPTION, task.description)
             put(COLUMN_IMAGE_URI, task.imageUri)
             put(COLUMN_NOTIFICATION_TIME, task.notificationTime)
+            put(COLUMN_ID_GOOGLE, task.idGoogle)
         }
         return db.update(
             TABLE_TASKS,
@@ -148,7 +159,7 @@ class TaskDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_
     }
 
     // Eliminar una tarea
-    fun deleteTask(id: Int): Int {
+    fun deleteTask(id: Long): Int { // Changed to Long
         val db = writableDatabase
         return db.delete(
             TABLE_TASKS,

@@ -73,7 +73,7 @@ private fun copyUriContentToInternalStorage(context: Context, sourceUri: Uri): S
 @Composable
 fun TaskDetailScreen(
     taskViewModel: TaskViewModel,
-    taskId: Int?,
+    taskId: Long?,
     onNavigateBack: () -> Unit
 ) {
     val context = LocalContext.current

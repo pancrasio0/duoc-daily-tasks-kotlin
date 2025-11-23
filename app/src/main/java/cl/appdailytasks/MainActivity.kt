@@ -109,6 +109,7 @@ fun AppNavigation() {
 
     LaunchedEffect(googleUser) {
         if (googleUser != null) {
+            taskViewModel.setUserId(googleUser?.id)
             navController.navigate("taskList") { popUpTo("login") { inclusive = true } }
         }
     }
@@ -147,7 +148,7 @@ fun AppNavigation() {
             arguments = listOf(navArgument("taskId") { type = NavType.StringType; nullable = true })
         ) { backStackEntry ->
             val taskIdStr = backStackEntry.arguments?.getString("taskId")
-            val taskId = if (taskIdStr == "null") null else taskIdStr?.toIntOrNull()
+            val taskId = if (taskIdStr == "null") null else taskIdStr?.toLongOrNull()
             TaskDetailScreen(
                 taskViewModel = taskViewModel,
                 taskId = taskId,
