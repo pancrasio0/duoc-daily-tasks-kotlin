@@ -1,6 +1,7 @@
 package cl.appdailytasks
 
 import android.Manifest
+import android.app.Activity
 import android.app.AlarmManager
 import android.app.Application
 import android.content.Context
@@ -19,21 +20,30 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import cl.appdailytasks.auth.AuthRepository
 import cl.appdailytasks.ui.theme.AppdailytasksTheme
 import cl.appdailytasks.view.LoginScreen
 import cl.appdailytasks.view.TaskDetailScreen
 import cl.appdailytasks.view.TaskScreen
+import cl.appdailytasks.viewmodel.AuthViewModel
+import cl.appdailytasks.viewmodel.AuthViewModelFactory
 import cl.appdailytasks.viewmodel.TaskViewModel
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -55,7 +65,21 @@ class MainActivity : ComponentActivity() {
 fun AppNavigation() {
     val navController = rememberNavController()
     val context = LocalContext.current
+    val authRepository = AuthRepository(context)
+    val authViewModel: AuthViewModel = viewModel(factory = AuthViewModelFactory(authRepository))
     val taskViewModel: TaskViewModel = viewModel(factory = ViewModelProvider.AndroidViewModelFactory(context.applicationContext as Application))
+    val googleUser by authViewModel.googleUser.collectAsState()
+    val error by authViewModel.error.collectAsState()
+
+    val launcher = rememberLauncherForActivityResult(contract = ActivityResultContracts.StartActivityForResult()) {
+        if (it.resultCode == Activity.RESULT_OK) {
+            it.data?.let { intent ->
+                authViewModel.signInWithIntent(intent)
+            }
+        } else {
+            Toast.makeText(context, "Google Sign-In failed with result code: ${it.resultCode}", Toast.LENGTH_LONG).show()
+        }
+    }
 
     val permissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission(),
@@ -83,15 +107,40 @@ fun AppNavigation() {
         }
     }
 
+    LaunchedEffect(googleUser) {
+        if (googleUser != null) {
+            taskViewModel.setUserId(googleUser?.id)
+            navController.navigate("taskList") { popUpTo("login") { inclusive = true } }
+        }
+    }
+
+    LaunchedEffect(error) {
+        error?.let {
+            Toast.makeText(context, it, Toast.LENGTH_LONG).show()
+            authViewModel.clearError()
+        }
+    }
+
+    LaunchedEffect(Unit) {
+        authViewModel.signOutEvent.collectLatest {
+            navController.navigate("login") { popUpTo("taskList") { inclusive = true } }
+        }
+    }
+
     NavHost(navController = navController, startDestination = "login") {
         composable("login") {
-            LoginScreen(onOfflineMode = { navController.navigate("taskList") })
+            LoginScreen(
+                onOfflineMode = { navController.navigate("taskList") },
+                onGoogleSignIn = { launcher.launch(authViewModel.getSignInIntent()) }
+            )
         }
         composable("taskList") {
             TaskScreen(
                 taskViewModel = taskViewModel,
                 onAddTask = { navController.navigate("taskDetail/null") },
-                onTaskClick = { task -> navController.navigate("taskDetail/${task.id}") }
+                onTaskClick = { task -> navController.navigate("taskDetail/${task.id}") },
+                onSignOut = { authViewModel.signOut() },
+                googleUser = googleUser
             )
         }
         composable(
@@ -99,7 +148,7 @@ fun AppNavigation() {
             arguments = listOf(navArgument("taskId") { type = NavType.StringType; nullable = true })
         ) { backStackEntry ->
             val taskIdStr = backStackEntry.arguments?.getString("taskId")
-            val taskId = if (taskIdStr == "null") null else taskIdStr?.toIntOrNull()
+            val taskId = if (taskIdStr == "null") null else taskIdStr?.toLongOrNull()
             TaskDetailScreen(
                 taskViewModel = taskViewModel,
                 taskId = taskId,

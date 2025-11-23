@@ -20,7 +20,7 @@ import cl.appdailytasks.R
 class TaskNotificationReceiver : BroadcastReceiver() {
 
     override fun onReceive(context: Context, intent: Intent) {
-        val taskId = intent.getIntExtra("TASK_ID", 0)
+        val taskId = intent.getLongExtra("TASK_ID", 0)
         val taskTitle = intent.getStringExtra("TASK_TITLE") ?: "¡Tarea Pendiente!"
         val taskDescription = intent.getStringExtra("TASK_DESC") ?: "Es hora de empezar."
 
@@ -48,7 +48,7 @@ class TaskNotificationReceiver : BroadcastReceiver() {
         val activityIntent = Intent(context, MainActivity::class.java)
         val pendingIntent = PendingIntent.getActivity(
             context,
-            taskId,
+            taskId.toInt(), // Cast to Int for requestCode
             activityIntent,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
@@ -80,7 +80,7 @@ class TaskNotificationReceiver : BroadcastReceiver() {
                 Manifest.permission.POST_NOTIFICATIONS
             ) == PackageManager.PERMISSION_GRANTED
         ) {
-            NotificationManagerCompat.from(context).notify(taskId, builder.build())
+            NotificationManagerCompat.from(context).notify(taskId.toInt(), builder.build()) // Cast to Int for notificationId
         }
     }
 }
